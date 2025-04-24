@@ -430,7 +430,7 @@ with tab2:
     # 4) Scatter map by city
     st.subheader("📍  All Listings on the Map")
 
-    fig_listings = px.Scattermapbox(
+    fig_listings = px.scatter_mapbox(
         df,                                   # df is your filtered listing-level DataFrame
         lat="LATITUDE",
         lon="LONGITUDE",
