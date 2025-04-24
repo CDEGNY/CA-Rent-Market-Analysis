@@ -420,7 +420,7 @@ with tab2:
         ct.style
           .format(na_rep="0", precision=0)           # show zeros as “0”
           .background_gradient(cmap="Blues", axis=None)          # apply a blue ramp to all values…
-          .applymap(clear_zero, subset=ct.columns)    # …but then clear the color for zeros
+          .map(clear_zero, subset=ct.columns)    # …but then clear the color for zeros
     )
 
     # 3) Display
@@ -430,7 +430,7 @@ with tab2:
     # 4) Scatter map by city
     st.subheader("📍  All Listings on the Map")
 
-    fig_listings = px.scatter_mapbox(
+    fig_listings = px.scatter_map(
         df,                                   # df is your filtered listing-level DataFrame
         lat="LATITUDE",
         lon="LONGITUDE",
