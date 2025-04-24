@@ -213,6 +213,7 @@ class PropertyRecommender:
 DATA_PATH = 'sampled_california_data_df.csv'
 eda_df = load_data(DATA_PATH)
 knn_model, xgb_model, y_test_knn, y_pred_knn, y_pred_xgb, y_test_xgb, test_df = train_models(eda_df)
+recommender = PropertyRecommender(df_rec, FEATURE_ORDER, scaler)
 
 df_rec, FEATURE_ORDER, scaler = load_and_preprocess("sampled_california_data_df.csv")
 
@@ -578,9 +579,6 @@ with tab3:
 with tab4:
     st.title("⭐ Real Estate Recommendation")
     # — 2) Recommender class —
-
-    recommender = PropertyRecommender(df_rec, FEATURE_ORDER, scaler)
-
     # — 3) Sidebar controls —
     st.sidebar.header("Recommendation Filters")
     latitude  = st.sidebar.number_input("Latitude",  value=34.0522, step=0.0001)
