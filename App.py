@@ -213,9 +213,10 @@ class PropertyRecommender:
 DATA_PATH = 'sampled_california_data_df.csv'
 eda_df = load_data(DATA_PATH)
 knn_model, xgb_model, y_test_knn, y_pred_knn, y_pred_xgb, y_test_xgb, test_df = train_models(eda_df)
-recommender = PropertyRecommender(df_rec, FEATURE_ORDER, scaler)
 
 df_rec, FEATURE_ORDER, scaler = load_and_preprocess("sampled_california_data_df.csv")
+recommender = PropertyRecommender(df_rec, FEATURE_ORDER, scaler)
+
 
 # —— SIDEBAR NAVIGATION ——
 st.sidebar.title("Navigation")
