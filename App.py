@@ -160,13 +160,13 @@ def load_and_preprocess(path="sampled_california_data_df.csv"):
         df[c] = df[c].fillna(df[c].median())
     df['BEDS'] = df['BEDS'].astype(int)
     # text TFIDF
-    tfidf = TfidfVectorizer(stop_words='english', ngram_range=(1,2), max_features=50)
-    txt = tfidf.fit_transform(df['DESCRIPTION'].fillna(''))
-    txt_df = pd.DataFrame(txt.toarray(),
-                          columns=[f"TFIDF_{t}" for t in tfidf.get_feature_names_out()])
-    df = pd.concat([df, txt_df], axis=1)
+    # tfidf = TfidfVectorizer(stop_words='english', ngram_range=(1,2), max_features=50)
+    # txt = tfidf.fit_transform(df['DESCRIPTION'].fillna(''))
+    # txt_df = pd.DataFrame(txt.toarray(),
+    #                       columns=[f"TFIDF_{t}" for t in tfidf.get_feature_names_out()])
+    # df = pd.concat([df, txt_df], axis=1)
     # set globals
-    FEATURES = ['BEDS','BATHS','SQFT'] + ['POOL','GYM','DOORMAN','FURNISHED','LAUNDRY','GARAGE','CLUBHOUSE'] + txt_df.columns.tolist()
+    FEATURES = ['BEDS','BATHS','SQFT'] + ['POOL','GYM','DOORMAN','FURNISHED','LAUNDRY','GARAGE','CLUBHOUSE'] # + txt_df.columns.tolist()
     scaler = StandardScaler().fit(df[FEATURES])
     df[FEATURES] = scaler.transform(df[FEATURES])
     return df, FEATURES, scaler
@@ -430,7 +430,7 @@ with tab2:
     # 4) Scatter map by city
     st.subheader("📍  All Listings on the Map")
 
-    fig_listings = px.scatter_map(
+    fig_listings = px.Scattermapbox(
         df,                                   # df is your filtered listing-level DataFrame
         lat="LATITUDE",
         lon="LONGITUDE",
