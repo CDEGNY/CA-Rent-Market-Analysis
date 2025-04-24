@@ -86,7 +86,7 @@ def train_models(df):
         'colsample_bytree': 0.8, 
     }
 
-    xgb_model = xgb.train(params, dtrain, num_boost_round=500, evals=[(dtest, "Test")], early_stopping_rounds=50, verbose_eval=50)
+    xgb_model = xgb.train(params, dtrain, num_boost_round=300, evals=[(dtest, "Test")], early_stopping_rounds=50, verbose_eval=50)
     
     dtest = xgb.DMatrix(X_test, enable_categorical=True)
     y_test_xgb = y_test
