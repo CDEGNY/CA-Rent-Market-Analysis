@@ -171,6 +171,44 @@ def load_and_preprocess(path="sampled_california_data_df.csv"):
     df[FEATURES] = scaler.transform(df[FEATURES])
     return df, FEATURES, scaler
 
+class PropertyRecommender:
+    def __init__(self, df, features, scaler):
+        self.df = df
+        self.features = features
+        self.scaler = scaler
+        self.global_meds = {
+            'SQFT': df['SQFT'].median(),
+            'RENT_PRICE': df['RENT_PRICE'].median()
+        }
+    def _safe_med(self, df, col):
+        return df[col].median() if not df.empty else self.global_meds[col]
+    def recommend(self, lat, lon, radius, beds, baths, top_n=5):
+        tmp = self.df.copy()
+        tmp['distance'] = tmp.apply(
+            lambda r: geodesic((lat,lon),(r['LATITUDE'],r['LONGITUDE'])).miles, axis=1
+        )
+        filt = tmp[tmp['distance']<=radius]
+        filt = filt[(filt['BEDS']>=beds)&(filt['BATHS']>=baths)]
+        if filt.empty:
+            return None
+        # build user vector
+        uv = np.zeros(len(self.features))
+        for i, f in enumerate(self.features):
+            if f=='BEDS': uv[i]=beds
+            elif f=='BATHS': uv[i]=baths
+            elif f=='SQFT': uv[i]=self._safe_med(filt,'SQFT')
+            elif f=='RENT_PRICE': uv[i]=self._safe_med(filt,'RENT_PRICE')
+            elif f in ['POOL','GYM','DOORMAN','FURNISHED','LAUNDRY','GARAGE','CLUBHOUSE']:
+                uv[i]=1
+            else:
+                uv[i]=0
+        uv_sc = self.scaler.transform([uv])
+        knn = NearestNeighbors(n_neighbors=min(top_n,len(filt)), metric='cosine').fit(filt[self.features])
+        dists, idxs = knn.kneighbors(uv_sc)
+        res = filt.iloc[idxs[0]].copy()
+        res['match_score'] = 1/(1+dists[0])
+        return res.sort_values('match_score', ascending=False)
+
 # Update this to your CSV path:
 DATA_PATH = 'sampled_california_data_df.csv'
 eda_df = load_data(DATA_PATH)
@@ -540,43 +578,6 @@ with tab3:
 with tab4:
     st.title("⭐ Real Estate Recommendation")
     # — 2) Recommender class —
-    class PropertyRecommender:
-        def __init__(self, df, features, scaler):
-            self.df = df
-            self.features = features
-            self.scaler = scaler
-            self.global_meds = {
-                'SQFT': df['SQFT'].median(),
-                'RENT_PRICE': df['RENT_PRICE'].median()
-            }
-        def _safe_med(self, df, col):
-            return df[col].median() if not df.empty else self.global_meds[col]
-        def recommend(self, lat, lon, radius, beds, baths, top_n=5):
-            tmp = self.df.copy()
-            tmp['distance'] = tmp.apply(
-                lambda r: geodesic((lat,lon),(r['LATITUDE'],r['LONGITUDE'])).miles, axis=1
-            )
-            filt = tmp[tmp['distance']<=radius]
-            filt = filt[(filt['BEDS']>=beds)&(filt['BATHS']>=baths)]
-            if filt.empty:
-                return None
-            # build user vector
-            uv = np.zeros(len(self.features))
-            for i, f in enumerate(self.features):
-                if f=='BEDS': uv[i]=beds
-                elif f=='BATHS': uv[i]=baths
-                elif f=='SQFT': uv[i]=self._safe_med(filt,'SQFT')
-                elif f=='RENT_PRICE': uv[i]=self._safe_med(filt,'RENT_PRICE')
-                elif f in ['POOL','GYM','DOORMAN','FURNISHED','LAUNDRY','GARAGE','CLUBHOUSE']:
-                    uv[i]=1
-                else:
-                    uv[i]=0
-            uv_sc = self.scaler.transform([uv])
-            knn = NearestNeighbors(n_neighbors=min(top_n,len(filt)), metric='cosine').fit(filt[self.features])
-            dists, idxs = knn.kneighbors(uv_sc)
-            res = filt.iloc[idxs[0]].copy()
-            res['match_score'] = 1/(1+dists[0])
-            return res.sort_values('match_score', ascending=False)
 
     recommender = PropertyRecommender(df_rec, FEATURE_ORDER, scaler)
 
